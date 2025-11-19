@@ -4,7 +4,6 @@
             "server_address": "[SERVER_IP/FQDN]",
             "username": "[USERNAME]",
             "password": "[PASSWORD]",
-            "enable_ssl": true,
             "backup_task": {
                 "backup_destination": {
                     "sharefolder": "[SHARED FOLDER NAME]",
