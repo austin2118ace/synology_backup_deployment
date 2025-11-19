@@ -75,8 +75,7 @@ function run_with_spinner {
 
     $job = Start-Job -ScriptBlock $function -ArgumentList $argument
 
-    $symbols = @("⣾⣿", "⣽⣿", "⣻⣿", "⢿⣿", "⡿⣿", "⣟⣿", "⣯⣿", "⣷⣿",
-                 "⣿⣾", "⣿⣽", "⣿⣻", "⣿⢿", "⣿⡿", "⣿⣟", "⣿⣯", "⣿⣷")
+    $symbols = @("|", "/", "--", "\")
     $i = 0;
     while ($job.State -eq "Running") {
         $symbol =  $symbols[$i]
