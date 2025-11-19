@@ -69,6 +69,8 @@ function check_and_uninstall {
 }
 
 function run_with_spinner {
+    # Retrieved from https://gist.github.com/yoav-lavi/1253321d968db7f52d1a77ac48e3ff96 | 11/19/2025
+    # Modified by Austin Pauley, 2025
     param([scriptblock]$function, $argument, [string]$Label)
 
     $job = Start-Job -ScriptBlock $function -ArgumentList $argument
