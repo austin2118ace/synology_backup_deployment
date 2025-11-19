@@ -3,6 +3,8 @@
 This repository contains as Powershell script and config.json file for setting up Synology Drive Clients mass deployment.
 The Powershell script adds the current machines name to the backup path during deployment. 
 
+Read the [Synology Drive Client Mass Deployment Guide](https://global.download.synology.com/download/Document/Software/UserGuide/Package/SynologyDrive/All/enu/Synology_Drive_Client_Mass_Deployment_Guide_enu.pdf)
+
 # Usage
 1) Edit `config.json` with the appropriate fields
 2) Download the Synology Drive Client .msi installer from the [Synology Software Center](https://www.synology.com/en-us/support/download/RS3621RPxs?version=7.3#utilities)
