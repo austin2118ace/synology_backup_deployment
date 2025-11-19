@@ -1,31 +1,18 @@
 # Synology Drive Client Deployment Script
 # Fill $INSTALLER_PATH with path to the installer EXE
 
-$INSTALLER_PATH = 'PATH/TO/INSTALLER.EXE'
+function install {
+    param($INSTALLER_PATH, $NEW_PATH, $LOG_PATH)
+    Write-Host "Attempting to install the Synology Drive Client..." -ForegroundColor Yellow
+    $install = {
+        param($installer, $config_path, $log_path)
+        Write-Host $installer
+        return (start-process "msiexec.exe" -arg "/i `"$($installer)`" /l*v $($log_path) /qn CONFIGPATH=`"$($config_path)`" " -Wait -PassThru -verb RunAs).ExitCode 
+    }
 
-Write-Host "Synology Drive Client Mass Deployment Script" -ForegroundColor Cyan
-Write-Host "Austin Pauley, Florida State University, 2025" -ForegroundColor Cyan
-Write-Host "=============================================`n" -ForegroundColor Cyan
-Write-Host "Adding computer name to backup destination path" -ForegroundColor Yellow
-
-$config_file = Get-Content ".\config.json" -raw | ConvertFrom-Json
-$existing_path = $config_file.connections.backup_task.backup_destination.remote_path
-$new_path = $existing_path + $env:COMPUTERNAME + '/'
-$config_file.connections.backup_task.backup_destination.remote_path = $new_path # Set key to new path
-Write-Host "New Remote Backup Path $($config_file.connections.backup_task.backup_destination.remote_path)" # Print new path
-
-$config_file | ConvertTo-Json -depth 100 | set-content ".\custom_config.json"
-
-# Run Installer
-Write-Host "Running Synology Drive Client Installer"
-
-if ( -Not [System.IO.File]::Exists($INSTALLER_PATH) ) {
-    # Write-Error "Cannot find the Synology Drive Client Installer in [$($INSTALLER_PATH)]! Please check the file exists and try running the script again."
-    # exit 1
+    $result = run_with_spinner $install $INSTALLER_PATH, $NEW_PATH, $LOG_PATH "Installing Synology Drive Client..."
+    Write-Host $result
 }
-
-# Check if Client is Already installed, uninstall if so
-check_and_uninstall
 
 function check_and_uninstall {
     # Source - https://stackoverflow.com/a
@@ -65,7 +52,6 @@ function check_and_uninstall {
     }
 
     Write-Host "Successfully uninstalled the Synology Drive Client!" -ForegroundColor Green
-    return 0
 }
 
 function run_with_spinner {
@@ -91,3 +77,33 @@ function run_with_spinner {
 
     return $job | Receive-Job
 }
+
+$INSTALLER_PATH = './sdc-4.0.1-17885-x64.msi'
+
+Write-Host "Synology Drive Client Mass Deployment Script" -ForegroundColor Cyan
+Write-Host "Austin Pauley, Florida State University, 2025" -ForegroundColor Cyan
+Write-Host "=============================================`n" -ForegroundColor Cyan
+Write-Host "Adding computer name to backup destination path" -ForegroundColor Yellow
+
+$config_file = Get-Content ".\config.json" -raw | ConvertFrom-Json
+$existing_path = $config_file.connections.backup_task.backup_destination.remote_path
+$new_path = $existing_path + $env:COMPUTERNAME + '/'
+$config_file.connections.backup_task.backup_destination.remote_path = $new_path # Set key to new path
+Write-Host "New Remote Backup Path $($config_file.connections.backup_task.backup_destination.remote_path)" # Print new path
+
+$config_file | ConvertTo-Json -depth 100 | set-content ".\custom_config.json"
+
+# Run Installer
+$abs_path = Resolve-Path $INSTALLER_PATH
+$abs_config_path = Resolve-Path ".\custom_config.json"
+$log_path = (Resolve-Path ".").Path + "\msiexec.log"
+
+if ( -Not [System.IO.File]::Exists($abs_path) ) {
+    Write-Error "Cannot find the Synology Drive Client Installer in [$($abs_path)]! Please check the file exists and try running the script again."
+    exit 1
+}
+
+# Check if Client is Already installed, uninstall if so
+$res = check_and_uninstall
+
+install $abs_path $abs_config_path $log_path
