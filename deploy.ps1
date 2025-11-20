@@ -122,7 +122,7 @@ $abs_config_path = Resolve-Path ".\custom_config.json"
 $log_path = (Resolve-Path ".").Path + "\msiexec.log"
 
 # Check if Installer file exists
-if ( -Not [System.IO.File]::Exists($abs_path) ) {
+if ( -Not (Test-Path -Path $abs_path)) {
     Write-Error "Cannot find the Synology Drive Client Installer in [$($abs_path)]! Please check the file exists and try running the script again."
     exit 1
 }
