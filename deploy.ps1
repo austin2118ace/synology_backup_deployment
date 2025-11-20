@@ -1,6 +1,8 @@
 # Synology Drive Client Deployment Script
 # Fill $INSTALLER_PATH with path to the installer EXE
-
+param(
+    [Boolean]$do_uninstall = $false
+)
 $INSTALLER_PATH = './sdc-4.0.1-17885-x64.msi'
 $CONFIG_PATH = './dewan_config.json'
 
@@ -24,7 +26,7 @@ function install {
     Write-Host "Successfully installed Synology Drive Client!" -ForegroundColor Green
 }
 
-function check_and_uninstall {
+function check_installed {
     # Source - https://stackoverflow.com/a
     # Posted by nickdnk, modified by community. See post 'Timeline' for change history
     # Retrieved 2025-11-19, License - CC BY-SA 3.0
@@ -43,11 +45,18 @@ function check_and_uninstall {
     }
     else{
         Write-Host "Synology Drive Client is not installed, continuing!" -ForegroundColor Green
-        return 0
+        return 0, $null
     }
 
-    Write-Host "Synology Drive Client Found! Attempting to Uninstall...`n" -ForegroundColor Yellow
+    Write-Host "Synology Drive Client Found!`n" -ForegroundColor Yellow
+    return 1, $uninstall_obj
     
+}
+
+function uninstall{
+param(
+    $uninstall_obj
+)
     # Modify the msiexec command and run it
     $uninstall = {
         param($uninstall_obj)
@@ -64,6 +73,7 @@ function check_and_uninstall {
     }
 
     Write-Host "Successfully uninstalled the Synology Drive Client!" -ForegroundColor Green
+    return 1
 }
 
 function run_with_spinner {
@@ -117,11 +127,22 @@ if ( -Not [System.IO.File]::Exists($abs_path) ) {
     exit 1
 }
 
-# Check if Client is Already installed, uninstall if so
-check_and_uninstall
+# Check if the software is installed
+$is_installed, $uninstall_obj = check_installed
+
+# Check if Client is Already installed and the user wants to uninstall, uninstall if so
+if ($do_uninstall -and $is_installed){
+    $success = uninstall $uninstall_obj
+}
+elseif(-not $do_uninstall -and $is_installed){
+    Write-Host "Skipping Uninstall..." -ForegroundColor Yellow
+}
 
 # Install Client
-install $abs_path $abs_config_path $log_path
-
-# Remove modified backup file
-Remove-Item $abs_config_path -Force
+if (-not $is_installed -or $success){
+    # Install software if it isn't installed, OR we successfully uninstalled
+    install $abs_path $abs_config_path $log_path
+}
+else {
+    Write-Host "Software is already installed. Ending task!" -ForegroundColor Green
+}
