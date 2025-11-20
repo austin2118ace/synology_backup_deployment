@@ -11,3 +11,8 @@ Read the [Synology Drive Client Mass Deployment Guide](https://global.download.s
 3) Copy the installer, config file, and `deploy.ps1` to a network resource that each endpoint computer can reach
 4) Edit the `$INSTALLER_PATH` and `$CONFIG_PATH` values to point to the two files from step 3
 5) Using GPO configure each machine to execute the script
+
+
+# Params
+- `do_uninstall [Boolean]`: default = $false
+    - Set to $true to uninstall the software before installing
